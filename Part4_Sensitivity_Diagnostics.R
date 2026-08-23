@@ -1,7 +1,7 @@
 # ==============================================================================
 # Channel: CRUNCHECONOMETRIX
 # TOPIC: Canonical DiD
-# PART 4: Sensitivity Checks and Diagnostics
+# PART 4: Sensitivity Checks, Diagnostics, and Robust Error Correction
 # Presenter: Dr. Ngozi ADELEYE (aka CrunchQueen)
 # ==============================================================================
 
@@ -43,6 +43,9 @@ msummary(
 ) |> 
   save_as_docx(path = "Part4_Trimmed_Models_Regression_Table.docx")
 
+# Live Screen Preview: Displays your full vs. trimmed sensitivity matrix
+msummary(trimmed_models_list, stars = TRUE, fmt = 3)
+
 cat("\n>>> Outlier sweep complete! Trimmed sample size (N =", nrow(trimmed_data), ") verified.\n")
 cat(">>> Table saved inside your directory as 'Part4_Trimmed_Models_Regression_Table.docx'.\n")
 
@@ -76,3 +79,22 @@ bptest(m43_did_naive_trim)
 
 cat("\n--- MODEL 4.4: TRIMMED DID WITH CONTROLS VARIANCE AUDIT ---\n")
 bptest(m44_did_controls_trim)
+
+library(sandwich)
+library(lmtest)
+
+cat("\n--- PART 4: HETEROSKEDASTICITY-CORRECTED RESULTS (TRIMMED) ---\n")
+coeftest(m41_pooled_naive_trim,    vcov = vcovHC(m41_pooled_naive_trim,    type = "HC1"))
+coeftest(m42_pooled_controls_trim, vcov = vcovHC(m42_pooled_controls_trim, type = "HC1"))
+coeftest(m43_did_naive_trim,       vcov = vcovHC(m43_did_naive_trim,       type = "HC1"))
+coeftest(m44_did_controls_trim,    vcov = vcovHC(m44_did_controls_trim,    type = "HC1"))
+
+# Export your trimmed-sample robust regressions natively to Word
+msummary(
+  trimmed_models_list,
+  vcov = "HC1",      # Applies the robust error correction to your trimmed table
+  stars = TRUE,      # Maps your academic significance stars
+  fmt = 3,           # Rounds all coefficients to 3 decimal places
+  output = "flextable"
+) |> 
+  save_as_docx(path = "Part4_Robust_Trimmed_Models_Table.docx")

@@ -56,6 +56,10 @@ msummary(
 ) |> 
   save_as_docx(path = "Part3_Empirical_Regressions_Table.docx")
 
+# Live Screen Preview: Displays your 4-column side-by-side empirical regressions
+msummary(part3_models, stars = TRUE, fmt = 3)
+
+
 cat("\n>>> Part 3 Models Estimated Successfully! File saved in your directory. <<<\n")
 
 # ==============================================================================
@@ -73,3 +77,46 @@ bptest(m33_did_naive)
 
 cat("\n--- MODEL 3.4: DID WITH CONTROLS HETEROSKEDASTICITY AUDIT ---\n")
 bptest(m34_did_controls)
+
+# ==============================================================================
+# PART 3 & 4 EXTENSION: CORRECTING HETEROSKEDASTICITY WITH HC1 ERRORS
+# ==============================================================================
+library(sandwich)
+library(lmtest)
+library(modelsummary)
+library(flextable)
+
+# 1. Apply robust standard errors (HC1) to all four models
+robust_m31 <- coeftest(m31_pooled_naive, vcov = vcovHC(m31_pooled_naive, type = "HC1"))
+robust_m32 <- coeftest(m32_pooled_controls, vcov = vcovHC(m32_pooled_controls, type = "HC1"))
+robust_m33 <- coeftest(m33_did_naive, vcov = vcovHC(m33_did_naive, type = "HC1"))
+robust_m34 <- coeftest(m34_did_controls, vcov = vcovHC(m34_did_controls, type = "HC1"))
+
+# 2. Package robust models into a named list
+robust_models_list <- list(
+  "(1) Naive Pooled [Robust]" = m31_pooled_naive,
+  "(2) Pooled + Ctrl [Robust]" = m32_pooled_controls,
+  "(3) Canonical DiD [Robust]" = m33_did_naive,
+  "(4) DiD + Controls [Robust]" = m34_did_controls
+)
+
+# 3. Export to Word with Robust Errors passed into the 'vcov' argument
+msummary(
+  robust_models_list,
+  vcov = "HC1", # Directs modelsummary to apply robust standard errors natively
+  stars = TRUE,
+  fmt = 3,
+  output = "flextable"
+) |> 
+  save_as_docx(path = "Part3_Robust_Regressions_Table.docx")
+
+# 1. Load the required robust estimation packages
+library(sandwich)
+library(lmtest)
+
+# 2. Print the corrected results with Robust Standard Errors (HC1 format)
+cat("\n--- ROBUST OLS INFERENCE (COMPLIANT WITH STATA ROBUST) ---\n")
+coeftest(m31_pooled_naive,    vcov = vcovHC(m31_pooled_naive,    type = "HC1"))
+coeftest(m32_pooled_controls, vcov = vcovHC(m32_pooled_controls, type = "HC1"))
+coeftest(m33_did_naive,       vcov = vcovHC(m33_did_naive,       type = "HC1"))
+coeftest(m34_did_controls,    vcov = vcovHC(m34_did_controls,    type = "HC1"))
