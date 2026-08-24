@@ -12,7 +12,7 @@ library(flextable)
 library(lmtest)
 
 # Step 2: Reload your Excel file back into R's memory from your directory
-minwage_excel <- import("minwage_saved.xlsx") 
+minwage_excel <- import("minwage_excel.xlsx") 
 
 # Step 3: Filter your sample to the active estimation observations 
 estimation_data <- subset(minwage_excel, sample == 1) 
@@ -120,3 +120,4 @@ coeftest(m31_pooled_naive,    vcov = vcovHC(m31_pooled_naive,    type = "HC1"))
 coeftest(m32_pooled_controls, vcov = vcovHC(m32_pooled_controls, type = "HC1"))
 coeftest(m33_did_naive,       vcov = vcovHC(m33_did_naive,       type = "HC1"))
 coeftest(m34_did_controls,    vcov = vcovHC(m34_did_controls,    type = "HC1"))
+
